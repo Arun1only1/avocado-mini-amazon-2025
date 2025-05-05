@@ -6,7 +6,7 @@ import ProductCard from "./ProductCard";
 import { IProductCard } from "./SellerCardContainer";
 import { IError } from "@/interface/error.interface";
 
-interface IData {
+export interface IData {
   productList: IProductCard[];
   totalPage: number;
 }

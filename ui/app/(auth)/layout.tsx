@@ -6,6 +6,7 @@ import ReactQueryClientProvider from "@/provider/ReactQueryClientProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthGuard from "@/guard/AuthGuard";
+import { Box } from "@mui/material";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,10 +33,12 @@ export default function AuthLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
         <Toaster />
         <AuthGuard>
-          <ReactQueryClientProvider>{children}</ReactQueryClientProvider>
+          <ReactQueryClientProvider>
+            <Navbar />
+            {children}
+          </ReactQueryClientProvider>
         </AuthGuard>
 
         <Footer />

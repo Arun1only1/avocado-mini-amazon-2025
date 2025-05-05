@@ -4,6 +4,7 @@ import Image from "next/image";
 import React from "react";
 import { IProductCard } from "./SellerCardContainer";
 import { useRouter } from "next/navigation";
+import { fallBackProductImage } from "@/constant/general.constant";
 
 const ProductCard = (props: IProductCard) => {
   const router = useRouter();
@@ -22,10 +23,15 @@ const ProductCard = (props: IProductCard) => {
           router.push(`/product-detail/${props._id}`);
         }}
         className="cursor-pointer hover:opacity-90 transition-opacity duration-300 ease-in-out"
-        src="/mouseImage.webp"
+        src={props.image || fallBackProductImage}
         height={400}
         width={400}
         alt={props.name}
+        style={{
+          width: "400px",
+          height: "250px",
+          objectFit: "cover",
+        }}
       />
 
       <Stack className="p-6 space-y-4">

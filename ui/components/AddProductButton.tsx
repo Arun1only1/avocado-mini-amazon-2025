@@ -1,23 +1,28 @@
 "use client";
-import { Button } from "@mui/material";
-import { useRouter } from "next/navigation";
-import React from "react";
 
-const AddProductButton: React.FC = () => {
+import { Fab, Tooltip } from "@mui/material";
+import { useRouter } from "next/navigation";
+import type { FC } from "react";
+import AddTwoToneIcon from "@mui/icons-material/AddTwoTone";
+
+const AddProductButton: FC = () => {
   const router = useRouter();
+
+  const handleClick = () => {
+    router.push("/add-product");
+  };
+
   return (
-    <>
-      <Button
-        variant="contained"
+    <Tooltip title="Add Product" placement="left">
+      <Fab
         color="secondary"
-        className="mt-8"
-        onClick={() => {
-          router.push("/add-product");
-        }}
+        aria-label="add product"
+        onClick={handleClick}
+        className="fixed right-12 bottom-12 bg-red-500 hover:bg-red-600 p-8"
       >
-        Add Product
-      </Button>
-    </>
+        <AddTwoToneIcon className="text-3xl" />
+      </Fab>
+    </Tooltip>
   );
 };
 

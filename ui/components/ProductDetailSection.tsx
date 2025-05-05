@@ -18,6 +18,7 @@ import axiosInstance from "@/lib/axios.instance";
 import { useParams, useRouter } from "next/navigation";
 import { IError } from "@/interface/error.interface";
 import AddToCart from "./AddToCart";
+import { fallBackProductImage } from "@/constant/general.constant";
 
 interface IProductDetails {
   name: string;
@@ -88,11 +89,15 @@ const ProductDetailSection: React.FC = () => {
       <Box className="w-[50%] flex justify-center items-center">
         <Image
           className="cursor-pointer hover:opacity-90 transition-opacity duration-300 ease-in-out"
-          src={image || "/mouseImage.webp"} // Use dynamic image or fallback
+          src={image || fallBackProductImage} // Use dynamic image or fallback
           height={400}
           width={800}
           alt={name || "Product Image"} // Dynamic alt text
-          objectFit="contain" // Ensure image fits within container
+          style={{
+            objectFit: "contain",
+            height: "400px",
+            width: "100%",
+          }}
         />
       </Box>
       <Box className="flex flex-col items-start gap-4 w-[50%]">
@@ -127,7 +132,7 @@ const ProductDetailSection: React.FC = () => {
 
         {userRole === "buyer" && (
           <Box className="w-full flex justify-between gap-8">
-            <AddToCart totalQuantity={quantity} />
+            <AddToCart totalQuantity={quantity} productId={productId} />
           </Box>
         )}
       </Box>

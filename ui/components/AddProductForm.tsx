@@ -21,6 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 import { Formik } from "formik";
 import Image from "next/image";
@@ -35,6 +36,7 @@ export interface IProductRoot {
   quantity: number;
   category: string;
   description: string;
+  image?: string;
 }
 export interface IAddProductForm extends IProductRoot {
   freeShipping: string;
@@ -46,8 +48,10 @@ export interface IProductData extends IProductRoot {
 
 const AddProductForm = () => {
   const router = useRouter();
-  const [localUrl, setLocalUrl] = useState<string | null>(null);
 
+  const [localUrl, setLocalUrl] = useState<string | null>(null);
+  const [image, setImage] = useState<File | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
   const { isPending, mutate } = useMutation({
     mutationKey: ["add-product"],
     mutationFn: async (values: IProductData) => {
@@ -62,9 +66,37 @@ const AddProductForm = () => {
     },
   });
 
+  // input => image
+  // output => url
+  const handleImageUploadToCloudinary = async (image: File) => {
+    try {
+      const cloud_name = "dlkcko4n6";
+      const upload_preset = "avocado-mini-amazon-2025";
+
+      const formData = new FormData();
+      formData.append("file", image);
+      formData.append("upload_preset", upload_preset);
+
+      setImageLoading(true);
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
+        formData
+      );
+
+      const url = res.data.secure_url;
+
+      return url;
+    } catch (error) {
+      console.log("error", error);
+      toast.error("Image upload failed.");
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   return (
     <Box>
-      {isPending && <LinearProgress color="warning" />}
+      {(isPending || imageLoading) && <LinearProgress color="warning" />}
       <Formik
         initialValues={{
           name: "",
@@ -76,7 +108,7 @@ const AddProductForm = () => {
           description: "",
         }}
         validationSchema={productSchema}
-        onSubmit={(values: IAddProductForm) => {
+        onSubmit={async (values: IAddProductForm) => {
           // we need to convert freeShipping from string to boolean
 
           const newProduct = {
@@ -84,7 +116,12 @@ const AddProductForm = () => {
             freeShipping: values.freeShipping === "true",
           };
 
-          mutate(newProduct);
+          let imageUrl: string | undefined = undefined;
+          if (image) {
+            imageUrl = await handleImageUploadToCloudinary(image);
+          }
+
+          mutate({ ...newProduct, image: imageUrl });
         }}
       >
         {(formik) => {
@@ -104,24 +141,23 @@ const AddProductForm = () => {
                   height={250}
                   width={250}
                   style={{
-                    objectFit: "contain",
-                    height: "250px",
-                    width: "100%",
+                    width: "450px",
+                    height: "350px",
+                    objectFit: "cover",
                   }}
                 />
               )}
 
               <input
                 type="file"
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  console.log(event.target.files);
-
+                onChange={(event) => {
                   if (!event || !event.target || !event.target.files) {
                     return;
                   }
-                  const image = event.target.files[0];
-                  const imageLocalUrl = URL.createObjectURL(image);
-                  setLocalUrl(imageLocalUrl);
+
+                  const file = event.target.files[0];
+                  setLocalUrl(URL.createObjectURL(file));
+                  setImage(file);
                 }}
               />
 

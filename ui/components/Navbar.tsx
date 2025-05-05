@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import { Badge, CircularProgress, IconButton } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/lib/axios.instance";
+import { IError } from "@/interface/error.interface";
 const navItems = [
   { text: "Home", link: "/" },
   { text: "Contact", link: "#" },
@@ -11,8 +15,13 @@ const navItems = [
 ];
 
 export default function Navbar() {
+  const [userRole, setUserRole] = useState("");
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const goToCart = () => {
+    router.push("/cart");
+  };
 
   const toggleDrawer = () => {
     setMobileOpen(!mobileOpen);
@@ -22,6 +31,21 @@ export default function Navbar() {
     window.localStorage.clear();
     router.replace("/login");
   };
+
+  const { isPending, data, isError, error } = useQuery<number, IError>({
+    queryKey: ["get-cart-item-count"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/cart/item/count");
+
+      return res.data.totalCartItem;
+    },
+    enabled: userRole === "buyer",
+  });
+
+  console.log({ data });
+  useEffect(() => {
+    setUserRole(window.localStorage.getItem("role") as string);
+  }, []);
 
   return (
     <nav className="w-full bg-gradient-to-r from-orange-600 to-indigo-600 shadow-lg mb-12">
@@ -42,6 +66,13 @@ export default function Navbar() {
                 {item.text}
               </Link>
             ))}
+            {userRole === "buyer" && (
+              <IconButton sx={{ color: "#fff" }} onClick={goToCart}>
+                <Badge badgeContent={data} color="warning">
+                  <ShoppingCartOutlinedIcon />
+                </Badge>
+              </IconButton>
+            )}
             <button
               onClick={handleLogout}
               className="bg-white text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-md font-medium transition-colors duration-200"
@@ -105,6 +136,13 @@ export default function Navbar() {
               {item.text}
             </Link>
           ))}
+          {userRole === "buyer" && (
+            <IconButton sx={{ color: "#000" }} onClick={goToCart}>
+              <Badge badgeContent={data} color="warning">
+                <ShoppingCartOutlinedIcon />
+              </Badge>
+            </IconButton>
+          )}
           <button
             onClick={handleLogout}
             className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200"

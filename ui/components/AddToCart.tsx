@@ -3,13 +3,42 @@ import React, { useState } from "react";
 import AddSharpIcon from "@mui/icons-material/AddSharp";
 import RemoveSharpIcon from "@mui/icons-material/RemoveSharp";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "@/lib/axios.instance";
+import toast from "react-hot-toast";
+import { IError } from "@/interface/error.interface";
+import { AxiosResponse } from "axios";
 
 interface Props {
   totalQuantity: number;
+  productId: string;
 }
 
-const AddToCart: React.FC<Props> = ({ totalQuantity }) => {
+interface IAddToCartResponse extends AxiosResponse {
+  data: {
+    message: string;
+  };
+}
+const AddToCart: React.FC<Props> = ({ totalQuantity, productId }) => {
   const [count, setCount] = useState(1);
+
+  const queryClient = useQueryClient();
+  const { isPending, mutate } = useMutation<IAddToCartResponse, IError>({
+    mutationKey: ["add-to-cart"],
+    mutationFn: async () => {
+      return await axiosInstance.post("/cart/item/add", {
+        productId,
+        orderedQuantity: count,
+      });
+    },
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["get-cart-item-count"] });
+      toast.success(res.data.message);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message);
+    },
+  });
 
   const handleCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
@@ -122,6 +151,9 @@ const AddToCart: React.FC<Props> = ({ totalQuantity }) => {
           "&:hover": {
             backgroundColor: "#388e3c", // Darker green on hover
           },
+        }}
+        onClick={() => {
+          mutate();
         }}
       >
         Add to Cart

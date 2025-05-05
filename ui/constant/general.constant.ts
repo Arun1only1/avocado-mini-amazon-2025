@@ -21,3 +21,5 @@ export const productCategoriesForDropDown = [
   { id: 8, value: "sports", label: "Sports" },
   { id: 9, value: "stationery", label: "Stationery" },
 ];
+
+export const fallBackProductImage = "/product-fallback.jpeg";
